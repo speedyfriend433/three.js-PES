@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Engine with Three.js</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    const gravity = new THREE.Vector3(0, -0.1, 0);
+    let objects = [];
+    const floorGeometry = new THREE.BoxGeometry(1000, 1, 1000);
+    const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x555555 });
+    const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+    floor.position.y = -2;
+    scene.add(floor);
+
+    function createSphere(radius, x, y, z) {
+      const geometry = new THREE.SphereGeometry(radius, 32, 32);
+      const material = new THREE.MeshBasicMaterial({ color: Math.random() * 0xffffff });
+      const sphere = new THREE.Mesh(geometry, material);
+      sphere.position.set(x, y, z);
+      sphere.velocity = new THREE.Vector3(0, 0, 0); // Initialize velocity
+      scene.add(sphere);
+      objects.push(sphere);
+    }
+
+    createSphere(1, -5, 10, 0);
+    createSphere(1, 0, 15, 0);
+    createSphere(1, 5, 20, 0);
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      objects.forEach(object => {
+
+        object.velocity.add(gravity);
+
+        object.position.add(object.velocity);
+
+        if (object.position.y - 1 <= floor.position.y) {
+          object.position.y = floor.position.y + 1;
+          object.velocity.y *= -0.8;
+        }
+
+
+        if (object.position.x < -50 || object.position.x > 50) {
+          object.velocity.x *= -0.9;
+        }
+        if (object.position.z < -50 || object.position.z > 50) {
+          object.velocity.z *= -0.9;
+        }
+      });
+
+      renderer.render(scene, camera);
+    }
+
+    camera.position.z = 30;
+    window.addEventListener('resize', () => {
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+    });
+
+    animate();
+  </script>
+</body>
+</html>
